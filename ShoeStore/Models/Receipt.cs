@@ -1,19 +1,25 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace ShoeStore.Models;
 
 public class Receipt
 {
-    private Receipt(int id, DateTime receiptDate, IReadOnlyList<ReceiptItem> items)
+    private readonly List<ReceiptItem> _items = new();
+
+    protected Receipt()
     {
-        Id = id;
-        ReceiptDate = receiptDate;
-        Items = items;
     }
 
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Column("id")]
     public int Id { get; private set; }
 
+    [Column("receipt_date", TypeName = "date")]
     public DateTime ReceiptDate { get; private set; }
 
-    public IReadOnlyList<ReceiptItem> Items { get; private set; }
+    public IReadOnlyList<ReceiptItem> Items => _items;
 
     public static Receipt Create(DateTime receiptDate, IEnumerable<ReceiptItem> items)
     {
@@ -36,6 +42,13 @@ public class Receipt
             throw new ArgumentException("Поступление должно содержать хотя бы одну позицию.", nameof(items));
         }
 
-        return new Receipt(Guard.NotNegative(id, nameof(id)), receiptDate.Date, itemList.AsReadOnly());
+        var receipt = new Receipt
+        {
+            Id = Guard.NotNegative(id, nameof(id)),
+            ReceiptDate = receiptDate.Date
+        };
+        receipt._items.AddRange(itemList);
+
+        return receipt;
     }
 }

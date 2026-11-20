@@ -1,19 +1,25 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace ShoeStore.Models;
 
 public class Sale
 {
-    private Sale(int id, DateTime saleDate, IReadOnlyList<SaleItem> items)
+    private readonly List<SaleItem> _items = new();
+
+    protected Sale()
     {
-        Id = id;
-        SaleDate = saleDate;
-        Items = items;
     }
 
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Column("id")]
     public int Id { get; private set; }
 
+    [Column("sale_date", TypeName = "date")]
     public DateTime SaleDate { get; private set; }
 
-    public IReadOnlyList<SaleItem> Items { get; private set; }
+    public IReadOnlyList<SaleItem> Items => _items;
 
     public static Sale Create(DateTime saleDate, IEnumerable<SaleItem> items)
     {
@@ -36,6 +42,13 @@ public class Sale
             throw new ArgumentException("Продажа должна содержать хотя бы одну позицию.", nameof(items));
         }
 
-        return new Sale(Guard.NotNegative(id, nameof(id)), saleDate.Date, itemList.AsReadOnly());
+        var sale = new Sale
+        {
+            Id = Guard.NotNegative(id, nameof(id)),
+            SaleDate = saleDate.Date
+        };
+        sale._items.AddRange(itemList);
+
+        return sale;
     }
 }

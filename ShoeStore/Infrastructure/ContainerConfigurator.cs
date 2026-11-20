@@ -1,7 +1,8 @@
 using Autofac;
+using Serilog;
+using ShoeStore.Data;
 using ShoeStore.Forms;
 using ShoeStore.Repositories;
-using ShoeStore.Repositories.Stubs;
 
 namespace ShoeStore.Infrastructure;
 
@@ -11,18 +12,25 @@ public static class ContainerConfigurator
     {
         var builder = new ContainerBuilder();
 
+        RegisterInfrastructure(builder);
         RegisterRepositories(builder);
         RegisterForms(builder);
 
         return builder.Build();
     }
 
+    private static void RegisterInfrastructure(ContainerBuilder builder)
+    {
+        builder.Register(_ => Log.Logger).As<ILogger>().SingleInstance();
+        builder.RegisterType<DataContext>().AsSelf().InstancePerDependency();
+    }
+
     private static void RegisterRepositories(ContainerBuilder builder)
     {
-        builder.RegisterType<ManufacturerRepositoryStub>().As<IManufacturerRepository>().SingleInstance();
-        builder.RegisterType<ShoeRepositoryStub>().As<IShoeRepository>().SingleInstance();
-        builder.RegisterType<ReceiptRepositoryStub>().As<IReceiptRepository>().SingleInstance();
-        builder.RegisterType<SaleRepositoryStub>().As<ISaleRepository>().SingleInstance();
+        builder.RegisterType<ManufacturerRepository>().As<IManufacturerRepository>().InstancePerDependency();
+        builder.RegisterType<ShoeRepository>().As<IShoeRepository>().InstancePerDependency();
+        builder.RegisterType<ReceiptRepository>().As<IReceiptRepository>().InstancePerDependency();
+        builder.RegisterType<SaleRepository>().As<ISaleRepository>().InstancePerDependency();
     }
 
     private static void RegisterForms(ContainerBuilder builder)

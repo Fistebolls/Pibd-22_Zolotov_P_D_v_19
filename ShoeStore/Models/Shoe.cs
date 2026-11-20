@@ -1,30 +1,39 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using ShoeStore.Enums;
 
 namespace ShoeStore.Models;
 
 public class Shoe
 {
-    private Shoe(int id, string name, int manufacturerId, decimal price, ShoeCategory category, Season seasons)
+    protected Shoe()
     {
-        Id = id;
-        Name = name;
-        ManufacturerId = manufacturerId;
-        Price = price;
-        Category = category;
-        Seasons = seasons;
     }
 
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Column("id")]
     public int Id { get; private set; }
 
-    public string Name { get; private set; }
+    [Required]
+    [MaxLength(100)]
+    [Column("name")]
+    public string Name { get; private set; } = string.Empty;
 
+    [Column("manufacturer_id")]
+    [ForeignKey(nameof(Manufacturer))]
     public int ManufacturerId { get; private set; }
 
+    [Column("price", TypeName = "numeric(10,2)")]
     public decimal Price { get; private set; }
 
+    [Column("category")]
     public ShoeCategory Category { get; private set; }
 
+    [Column("seasons")]
     public Season Seasons { get; private set; }
+
+    public Manufacturer? Manufacturer { get; private set; }
 
     public static Shoe Create(string name, int manufacturerId, decimal price, ShoeCategory category, Season seasons)
     {
@@ -43,12 +52,14 @@ public class Shoe
             throw new ArgumentException("Необходимо указать хотя бы один сезон.", nameof(seasons));
         }
 
-        return new Shoe(
-            Guard.NotNegative(id, nameof(id)),
-            Guard.NotEmpty(name, nameof(name)),
-            Guard.Positive(manufacturerId, nameof(manufacturerId)),
-            Guard.Positive(price, nameof(price)),
-            category,
-            seasons);
+        return new Shoe
+        {
+            Id = Guard.NotNegative(id, nameof(id)),
+            Name = Guard.NotEmpty(name, nameof(name)),
+            ManufacturerId = Guard.Positive(manufacturerId, nameof(manufacturerId)),
+            Price = Guard.Positive(price, nameof(price)),
+            Category = category,
+            Seasons = seasons
+        };
     }
 }
