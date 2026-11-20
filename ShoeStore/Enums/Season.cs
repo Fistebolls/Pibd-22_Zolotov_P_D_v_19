@@ -9,14 +9,14 @@ public enum Season
     None = 0,
 
     [Description("Весна")]
-    Spring = 1,
+    Spring = 1 << 0,
 
     [Description("Лето")]
-    Summer = 2,
+    Summer = 1 << 1,
 
     [Description("Осень")]
-    Autumn = 4,
+    Autumn = 1 << 2,
 
     [Description("Зима")]
-    Winter = 8
+    Winter = 1 << 3
 }
